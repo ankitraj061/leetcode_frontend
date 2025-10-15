@@ -3,7 +3,7 @@
 
 import { ThemeToggle } from '@/app/components/themeToggle';
 import { useSelector, useDispatch } from 'react-redux';
-import { logoutUser } from '@/app/authSlice';
+import { logoutUser } from '@/app/slices/authSlice';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';

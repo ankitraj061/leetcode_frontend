@@ -67,13 +67,11 @@ const ProblemItem: React.FC<ProblemItemProps> = ({ problem, onSaveToggle }) => {
     }
     
     // If user has access or it's a free problem, navigate to problem page
-    const urlTitle = problem.title.toLowerCase().replace(/\s+/g, '%20');
-    router.push(`/problems/${urlTitle}`);
+    router.push(`/problems/${problem.slug}`);
   };
 
   const handleSaveToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
     if (isSaving) return;
     
     setIsSaving(true);
@@ -87,6 +85,77 @@ const ProblemItem: React.FC<ProblemItemProps> = ({ problem, onSaveToggle }) => {
     }
   };
 
+  // ✅ NEW: Function to render status icon based on problem state
+  const renderStatusIcon = () => {
+    if (problem.isSolvedByUser) {
+      // Solved - Green checkmark
+      return (
+        <div className="relative">
+          <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center border-2 border-success animate-pulse">
+            <svg className="w-6 h-6 text-success" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+        </div>
+      );
+    } else if (problem.isAttemptedByUser) {
+      // Attempted but not solved - Orange/Yellow warning icon
+      return (
+        <div className="relative">
+          <div className="w-10 h-10 bg-warning/20 rounded-full flex items-center justify-center border-2 border-warning">
+            <svg className="w-6 h-6 text-warning" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+          </div>
+          {/* Pulsing border to indicate work in progress */}
+          <div className="absolute inset-0 rounded-full border-2 border-warning/30 animate-pulse"></div>
+        </div>
+      );
+    } else if (problem.isPremiumProblem) {
+      // Premium problem - Lock or star icon based on access
+      return (
+        <div className="relative">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 glass ${
+            hasPremiumAccess 
+              ? 'bg-brand/20 border-brand text-brand' 
+              : 'bg-warning/20 border-warning text-warning'
+          }`}>
+            {hasPremiumAccess ? (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+              </svg>
+            )}
+          </div>
+          {!hasPremiumAccess && (
+            <div className="absolute inset-0 rounded-full border-2 border-warning/50 animate-spin"></div>
+          )}
+        </div>
+      );
+    } else {
+      // Not attempted - Default arrow icon
+      return (
+        <div className="w-10 h-10 bg-tertiary/20 rounded-full flex items-center justify-center border-2 border-dashed border-tertiary group-hover:border-brand/50 transition-all duration-300">
+          <svg className="w-5 h-5 text-tertiary group-hover:text-brand transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      );
+    }
+  };
+
+  // ✅ NEW: Function to get status text for accessibility/tooltips
+  const getStatusText = () => {
+    if (problem.isSolvedByUser) return "Solved";
+    if (problem.isAttemptedByUser) return "Attempted";
+    if (problem.isPremiumProblem && !hasPremiumAccess) return "Premium - Locked";
+    if (problem.isPremiumProblem && hasPremiumAccess) return "Premium - Unlocked";
+    return "Not Attempted";
+  };
+
   return (
     <>
       <div 
@@ -98,45 +167,11 @@ const ProblemItem: React.FC<ProblemItemProps> = ({ problem, onSaveToggle }) => {
         onClick={handleProblemClick}
       >
         <div className="flex items-center p-6 gap-6">
-          {/* Status Icon */}
+          {/* ✅ UPDATED: Status Icon with attempted state */}
           <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center">
-            {problem.isSolvedByUser ? (
-              <div className="relative">
-                <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center border-2 border-success animate-pulse">
-                  <svg className="w-6 h-6 text-success" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                  </svg>
-                </div>
-                {/* <div className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full animate-ping"></div> */}
-              </div>
-            ) : problem.isPremiumProblem ? (
-              <div className="relative">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 glass ${
-                  hasPremiumAccess 
-                    ? 'bg-brand/20 border-brand text-brand' 
-                    : 'bg-warning/20 border-warning text-warning'
-                }`}>
-                  {hasPremiumAccess ? (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  ) : (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                    </svg>
-                  )}
-                </div>
-                {!hasPremiumAccess && (
-                  <div className="absolute inset-0 rounded-full border-2 border-warning/50 animate-spin"></div>
-                )}
-              </div>
-            ) : (
-              <div className="w-10 h-10 bg-tertiary/20 rounded-full flex items-center justify-center border-2 border-dashed border-tertiary group-hover:border-brand/50 transition-all duration-300">
-                <svg className="w-5 h-5 text-tertiary group-hover:text-brand transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            )}
+            <div title={getStatusText()} className="relative">
+              {renderStatusIcon()}
+            </div>
           </div>
 
           {/* Problem Title */}
@@ -164,19 +199,37 @@ const ProblemItem: React.FC<ProblemItemProps> = ({ problem, onSaveToggle }) => {
                 </div>
               )}
             </div>
-            {/* Access status for premium problems */}
-            {problem.isPremiumProblem && (
-              <div className="flex items-center gap-2 mt-1">
-                <div className={`w-2 h-2 rounded-full ${
-                  hasPremiumAccess ? 'bg-success animate-pulse' : 'bg-warning animate-pulse'
-                }`}></div>
-                <span className={`text-xs font-medium ${
-                  hasPremiumAccess ? 'text-success' : 'text-warning'
-                }`}>
-                  {hasPremiumAccess ? 'Full Access Available' : 'Requires Premium'}
-                </span>
-              </div>
-            )}
+            
+            {/* ✅ NEW: Status indicator text */}
+            <div className="flex items-center gap-2 mt-1">
+              <div className={`w-2 h-2 rounded-full ${
+                problem.isSolvedByUser 
+                  ? 'bg-success animate-pulse' 
+                  : problem.isAttemptedByUser 
+                    ? 'bg-warning animate-pulse'
+                    : problem.isPremiumProblem 
+                      ? (hasPremiumAccess ? 'bg-success animate-pulse' : 'bg-warning animate-pulse')
+                      : 'bg-tertiary'
+              }`}></div>
+              <span className={`text-xs font-medium ${
+                problem.isSolvedByUser 
+                  ? 'text-success' 
+                  : problem.isAttemptedByUser 
+                    ? 'text-warning'
+                    : problem.isPremiumProblem 
+                      ? (hasPremiumAccess ? 'text-success' : 'text-warning')
+                      : 'text-tertiary'
+              }`}>
+                {problem.isSolvedByUser 
+                  ? 'Solved Successfully' 
+                  : problem.isAttemptedByUser 
+                    ? 'Work in Progress'
+                    : problem.isPremiumProblem 
+                      ? (hasPremiumAccess ? 'Full Access Available' : 'Requires Premium')
+                      : 'Ready to Start'
+                }
+              </span>
+            </div>
           </div>
 
           {/* Acceptance Rate */}
@@ -232,34 +285,6 @@ const ProblemItem: React.FC<ProblemItemProps> = ({ problem, onSaveToggle }) => {
             </button>
           </div>
         </div>
-
-        {/* Premium Access Hint - Show only for non-premium users on premium problems */}
-        {/* {problem.isPremiumProblem && !hasPremiumAccess && (
-          <div className="px-6 pb-4 animate-fade-in">
-            <div className="bg-gradient-to-r from-warning/10 to-accent/10 border border-warning/20 rounded-lg p-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-warning/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-warning" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-warning">
-                    Click to unlock with Premium
-                  </p>
-                  <p className="text-xs text-warning/80 mt-1">
-                    Get access to detailed solutions and expert explanations
-                  </p>
-                </div>
-                <div className="flex-shrink-0">
-                  <div className="px-3 py-1 bg-warning/20 rounded-full">
-                    <span className="text-xs font-bold text-warning">PRO</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )} */}
       </div>
 
       {/* Premium Modal - Only show if user doesn't have premium access */}

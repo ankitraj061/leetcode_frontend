@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '@/app/authSlice';
-import { checkAuth } from '@/app/authSlice';
+import { loginUser } from '@/app/slices/authSlice';
+import { checkAuth } from '@/app/slices/authSlice';
 
 
 

@@ -13,10 +13,12 @@ export interface User {
 export interface Problem {
   _id: string;
   title: string;
+  slug: string;
   difficulty: 'easy' | 'medium' | 'hard';
   isPremiumProblem: boolean;
   isSavedProblem: boolean;
   isSolvedByUser: boolean;
+  isAttemptedByUser: boolean;
   acceptanceRate: number;
   createdAt: string;
 }

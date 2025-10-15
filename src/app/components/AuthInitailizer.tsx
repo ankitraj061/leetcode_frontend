@@ -1,7 +1,7 @@
 'use client';
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { checkAuth } from "@/app/authSlice";
+import { checkAuth } from "@/app/slices/authSlice";
 import { useRouter } from "next/navigation";
 
 export default function AuthInitializer({ children }: { children: React.ReactNode }) {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser, checkAuth } from '@/app/authSlice';
+import { registerUser, checkAuth } from '@/app/slices/authSlice';
 
 export default function SignupPageContent() {
   const dispatch = useDispatch();
