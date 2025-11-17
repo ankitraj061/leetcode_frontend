@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '@/app/slices/authSlice';
 import { RootState, AppDispatch } from '@/app/store/store';
 import { BorderBeam } from '@/components/ui/border-beam';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 export default function LoginPageContent() {
   const dispatch = useDispatch<AppDispatch>();
@@ -37,7 +38,7 @@ export default function LoginPageContent() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:8000/api/auth/google';
+    window.location.href = `${BACKEND_URL}/api/auth/google`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

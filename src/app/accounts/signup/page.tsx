@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { registerUser, checkAuth } from '@/app/slices/authSlice';
 import { RootState, AppDispatch } from '@/app/store/store';
 import { BorderBeam } from '@/components/ui/border-beam';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 interface SignupFormData { 
   firstName: string; 
@@ -49,7 +50,7 @@ export default function SignupPageContent() {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = 'http://localhost:8000/api/auth/google';
+    window.location.href = `${BACKEND_URL}/api/auth/google`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
