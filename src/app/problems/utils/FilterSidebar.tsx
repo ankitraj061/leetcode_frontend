@@ -3,7 +3,7 @@ import { ProblemsFilters } from './types';
 
 interface FilterSidebarProps {
   filters: ProblemsFilters;
-  onFilterChange: (key: keyof ProblemsFilters, value: any) => void;
+  onFilterChange: (key: keyof ProblemsFilters, value: string) => void;
 }
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({

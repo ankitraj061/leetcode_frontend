@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { Problem } from './types';
 import { problemsAPI } from './globalAPI';
-import PremiumModal from './PremiumModal';
+import PremiumModal from '../../components/PremiumModal';
 import { RootState } from './types';
 
 interface ProblemItemProps {

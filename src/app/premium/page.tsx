@@ -1,55 +1,100 @@
-'use client';
+"use client";
 import PayButton from "./PayButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../problems/utils/types";
-import Confetti from 'react-confetti';
+import { useEffect, useRef } from "react";
+import confetti from "canvas-confetti";
+import Footer from "../components/Footer";
 
 export default function PremiumPage() {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const animationFrameRef = useRef<number | null>(null);
+  const endTimeRef = useRef<number | null>(null);
 
-   const { user } = useSelector((state: RootState) => state.auth);
+  // Continuous side cannons confetti effect
+  useEffect(() => {
+    if (user?.subscriptionType === 'premium') {
+      const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"];
+      
+      const frame = () => {
+        // Reset end time every 3 seconds to keep it continuous
+        if (!endTimeRef.current || Date.now() > endTimeRef.current) {
+          endTimeRef.current = Date.now() + 3000; // 3 seconds
+        }
 
-if (user?.subscriptionType === 'premium') {
-  return (
-    <div className="min-h-screen bg-primary relative overflow-hidden">
-      {/* Confetti */}
-      <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={200} />
+        // Fire confetti from both sides
+        confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          startVelocity: 60,
+          origin: { x: 0, y: 0.5 },
+          colors: colors,
+        });
+        confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          startVelocity: 60,
+          origin: { x: 1, y: 0.5 },
+          colors: colors,
+        });
 
-      <section className="bg-elevated border-b border-primary">
-        <div className="max-w-7xl mx-auto px-6 py-16 text-center relative">
-          <div className="animate-fade-in animate-scale-up">
-            <h1 className="text-4xl lg:text-5xl font-bold text-primary mb-4">
-              🎉 You are already a <span className="text-brand">TrueCode Premium</span> user!
-            </h1>
-            <p className="text-xl text-secondary max-w-3xl mx-auto animate-bounce-slow mb-8">
-              Unlock unlimited access to premium problems, and advanced features to accelerate your coding journey.
-            </p>
+        // Continue the animation
+        animationFrameRef.current = requestAnimationFrame(frame);
+      };
 
-            {/* Premium Features List */}
-            <ul className="max-w-3xl mx-auto text-left space-y-4 text-primary text-lg animate-fade-in">
-              <li className="flex items-center space-x-3">
-                <span className="text-success text-2xl">✓</span>
-                <span>Able to access all Premium Problems</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <span className="text-success text-2xl">✓</span>
-                <span>Able to access Problem Editorial sections</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <span className="text-success text-2xl">✓</span>
-                <span>Can add up to 20 discussions per hour for a problem</span>
-              </li>
-              <li className="flex items-center space-x-3">
-                <span className="text-success text-2xl">✓</span>
-                <span>Filter and view problems by company</span>
-              </li>
-            </ul>
+      // Start the animation
+      frame();
+
+      // Cleanup function to stop animation when component unmounts
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }
+  }, [user?.subscriptionType]);
+
+  if (user?.subscriptionType === 'premium') {
+    return (
+      <div className="min-h-screen bg-primary relative overflow-hidden">
+        <section className="bg-elevated border-b border-primary">
+          <div className="max-w-7xl mx-auto px-6 py-24 text-center relative">
+            <div className="animate-fade-in animate-scale-up">
+              <h1 className="text-4xl lg:text-5xl font-bold text-primary mb-4">
+                🎉 You are already a <span className="text-brand">TrueCode Premium</span> user!
+              </h1>
+              <p className="text-xl text-secondary max-w-3xl mx-auto animate-bounce-slow mb-8">
+                Unlock unlimited access to premium problems, and advanced features to accelerate your coding journey.
+              </p>
+
+              {/* Premium Features List */}
+              <ul className="max-w-3xl mx-auto text-left space-y-4 text-primary text-lg animate-fade-in">
+                <li className="flex items-center space-x-3">
+                  <span className="text-success text-2xl">✓</span>
+                  <span>Able to access all Premium Problems</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <span className="text-success text-2xl">✓</span>
+                  <span>Able to access Problem Editorial sections</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <span className="text-success text-2xl">✓</span>
+                  <span>Can add up to 20 discussions per hour for a problem</span>
+                </li>
+                <li className="flex items-center space-x-3">
+                  <span className="text-success text-2xl">✓</span>
+                  <span>Filter and view problems by company</span>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
+        </section>
+        <Footer></Footer>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-primary">

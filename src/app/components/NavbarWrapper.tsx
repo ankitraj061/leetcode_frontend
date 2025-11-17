@@ -4,10 +4,11 @@
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
 import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
 export default function NavbarWrapper() {
   const pathname = usePathname();
-  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   const hideNavbar =
     pathname?.startsWith('/problems/') ||

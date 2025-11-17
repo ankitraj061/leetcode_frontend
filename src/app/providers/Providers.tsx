@@ -2,7 +2,7 @@
 
 import { ThemeProvider } from './themeProvider';
 import { Provider } from "react-redux";
-import { store } from "@/app/sotre/store";
+import { store } from "@/app/store/store";
 import AuthInitializer from '../components/AuthInitailizer';
 
 export function Providers({ children }: { children: React.ReactNode }) {

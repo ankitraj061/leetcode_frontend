@@ -1,4 +1,5 @@
-'use client'
+'use client';
+
 import { axiosClient } from '@/app/utils/axiosClient';
 import { 
   ProblemsResponse, 
@@ -8,12 +9,13 @@ import {
   ProblemsFilters,
   APIError 
 } from './types';
+import { AxiosError } from 'axios';
 
 export class ProblemsAPI {
   static async getAllProblems(filters: ProblemsFilters): Promise<ProblemsResponse> {
     try {
       const params = new URLSearchParams();
-      
+
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
           params.append(key, String(value));
@@ -22,7 +24,7 @@ export class ProblemsAPI {
 
       const response = await axiosClient.get(`/api/user/problem/all?${params.toString()}`);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleError(error);
     }
   }
@@ -31,7 +33,7 @@ export class ProblemsAPI {
     try {
       const response = await axiosClient.get('/api/user/problem/topics');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleError(error);
     }
   }
@@ -40,7 +42,7 @@ export class ProblemsAPI {
     try {
       const response = await axiosClient.get('/api/user/problem/companies');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleError(error);
     }
   }
@@ -49,26 +51,31 @@ export class ProblemsAPI {
     try {
       const response = await axiosClient.post(`/api/user/problem/save/${problemId}`);
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       throw this.handleError(error);
     }
   }
 
-  static handleError(error: any): APIError {
-    if (error.response?.data?.error) {
+  static handleError(error: unknown): APIError {
+    // Check if it's an AxiosError (common for API requests)
+    if ((error as AxiosError)?.isAxiosError) {
+      const axiosError = error as AxiosError<{ error?: string; message?: string }>;
+      const data = axiosError.response?.data;
       return {
-        error: error.response.data.error,
-        message: error.response.data.message || error.response.data.error
+        error: data?.error ?? 'API Error',
+        message: data?.message ?? axiosError.message ?? 'An unknown API error occurred'
       };
     }
-    
-    if (error.message) {
+
+    // Generic JS Error
+    if (error instanceof Error) {
       return {
         error: 'Network Error',
         message: error.message
       };
     }
 
+    // Fallback
     return {
       error: 'Unknown Error',
       message: 'An unexpected error occurred'

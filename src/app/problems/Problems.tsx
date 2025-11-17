@@ -7,6 +7,7 @@ import FilterSidebar from './utils/FilterSidebar';
 import CompaniesSidebar from './utils/CompaniesSidebar';
 import SearchAndSort from './utils/SearchAndSort';
 import ProblemsList from './utils/ProblemsList';
+import Loader from '../components/TruckLoader';
 
 const ProblemsPage: React.FC = () => {
   // Redux state
@@ -41,7 +42,7 @@ const ProblemsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Filter change handler with premium validation
-  const handleFilterChange = useCallback((key: keyof ProblemsFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof ProblemsFilters, value: string) => {
     // Prevent non-premium users from filtering to premium problems
     if (key === 'type' && value === 'premium' && !hasPremiumAccess) {
       // Could show a toast notification here
@@ -107,8 +108,12 @@ const ProblemsPage: React.FC = () => {
       const response = await problemsAPI.getAllProblems(filters);
       setProblems(response.problems);
       setPagination(response.pagination);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch problems');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to fetch problems');
+      } else {
+        setError('Failed to fetch problems');
+      }
       setProblems([]);
     } finally {
       setLoading(prev => ({ ...prev, problems: false }));
@@ -242,18 +247,15 @@ const ProblemsPage: React.FC = () => {
 
   // Global loading display
   if (isGlobalLoading) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <div className="text-center animate-fade-in">
-          <div className="relative mb-8">
-            <div className="w-24 h-24 border-4 border-tertiary rounded-full animate-spin"></div>
-            <div className="absolute top-0 left-0 w-24 h-24 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
-            <div className="absolute top-3 left-3 w-18 h-18 bg-brand/20 rounded-full animate-pulse"></div>
-          </div>
-          <h2 className="text-2xl font-bold text-primary mb-2">
+  return (
+    <div className="min-h-screen bg-secondary flex items-center justify-center">
+      <div className="text-center animate-fade-in">
+        <Loader />
+        <div className="mt-8 space-y-4">
+          <h2 className="text-2xl font-bold text-primary">
             Welcome back, {user.firstName}! 👋
           </h2>
-          <p className="text-secondary mb-4">
+          <p className="text-secondary">
             {hasPremiumAccess 
               ? 'Loading your premium problems dashboard...' 
               : 'Preparing your coding journey...'
@@ -267,8 +269,9 @@ const ProblemsPage: React.FC = () => {
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-secondary animate-fade-in">
@@ -367,17 +370,17 @@ const ProblemsPage: React.FC = () => {
 
       {/* Loading Overlay for Individual Actions */}
       {(loading.problems && !isGlobalLoading) && (
-        <div className="fixed inset-0 bg-modal backdrop-blur-sm flex items-center justify-center z-40 animate-fade-in">
-          <div className="bg-elevated rounded-2xl p-8 shadow-xl border border-primary">
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-primary font-medium">
-                {hasPremiumAccess ? 'Loading premium problems...' : 'Updating problems...'}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-modal backdrop-blur-sm flex items-center justify-center z-40 animate-fade-in">
+    <div className="bg-elevated rounded-2xl p-8 shadow-xl border border-primary">
+      <div className="flex flex-col items-center gap-4">
+        <Loader />
+        <span className="text-primary font-medium text-center">
+          {hasPremiumAccess ? 'Loading problems...' : 'Updating problems...'}
+        </span>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Custom Scrollbar Styles */}
       <style jsx global>{`

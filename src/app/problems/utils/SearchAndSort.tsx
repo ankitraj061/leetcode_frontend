@@ -3,7 +3,7 @@ import { ProblemsFilters } from './types';
 
 interface SearchAndSortProps {
   filters: ProblemsFilters;
-  onFilterChange: (key: keyof ProblemsFilters, value: any) => void;
+  onFilterChange: (key: keyof ProblemsFilters, value: string) => void;
   totalProblems: number;
 }
 
@@ -136,7 +136,7 @@ const SearchAndSort: React.FC<SearchAndSortProps> = ({
                   Search results for:
                 </span>
                 <span className="text-sm font-semibold text-brand">
-                  "{filters.search}"
+                  &quot;{filters.search}&quot;
                 </span>
                 <button
                   onClick={clearSearch}

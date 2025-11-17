@@ -2,10 +2,43 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { axiosClient } from '../utils/axiosClient';
+import { RootState } from '@/app/store/store';
+
+// Define Razorpay interfaces
+export interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => Promise<void> | void;
+  prefill: {
+    name?: string;
+    email?: string;
+  };
+  notes: {
+    plan: string;
+  };
+  theme: {
+    color: string;
+  };
+}
+
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+export interface RazorpayInstance {
+  open(): void;
+}
+
 
 export default function PayButton({ plan = 'monthly' }: { plan?: 'monthly' | 'yearly' }) {
   const [loading, setLoading] = useState(false);
-  const { user } = useSelector((s: any) => s.auth);
+  const { user } = useSelector((s: RootState) => s.auth);
 
   useEffect(() => {
     // add razorpay script if not present
@@ -24,14 +57,14 @@ export default function PayButton({ plan = 'monthly' }: { plan?: 'monthly' | 'ye
       const resp = await axiosClient.post('/api/payments/create-order', { plan });
       const { order, key } = resp.data;
 
-      const options: any = {
-        key: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      const options: RazorpayOptions = {
+        key: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
         amount: order.amount,
         currency: order.currency,
         name: 'TrueCode',
         description: `Subscription: ${plan}`,
         order_id: order.id,
-        handler: async function (response: any) {
+        handler: async function (response: RazorpayResponse) {
           try {
             await axiosClient.post('/api/payments/verify-payment', {
               razorpay_order_id: response.razorpay_order_id,
@@ -46,7 +79,7 @@ export default function PayButton({ plan = 'monthly' }: { plan?: 'monthly' | 'ye
           }
         },
         prefill: {
-          name: user?.firstName + ' ' + user?.lastName,
+          name: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : undefined,
           email: user?.emailId
         },
         notes: {
@@ -57,7 +90,7 @@ export default function PayButton({ plan = 'monthly' }: { plan?: 'monthly' | 'ye
         }
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
       console.error('create order err', err);
